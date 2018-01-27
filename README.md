@@ -50,6 +50,7 @@ While the intention is for MotherD to run on all UNIX and unix-like operating
 systems, for immediate needs, it will be written to run on Linux-based systems
 for the AltimatOS distribution.
 
+<!--
 ## Languages Used for the Code
 
 MotherD's base loader, <code>initldr</code>, is written in the Go language,
@@ -63,4 +64,4 @@ allowing the development to be rapidly proved out. The other ancilliary
 services, will also be written in Perl. This does mean that early boot time
 initialization will require a Perl install with adequate modules required by
 the codebase.
-
+-->
