@@ -1,7 +1,3 @@
-# we don't need the directories that are outputted from GoLang's build process
-./bin
-./pkg
-
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -14,3 +10,17 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+*.swp
+DIST_REVISION
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+bin/gerty
+config.log
+config.status
+configure
+configure.lineno
+gerty-*.tar.gz
+setup_tools/substvars.sh
