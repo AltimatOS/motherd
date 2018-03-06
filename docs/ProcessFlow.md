@@ -28,10 +28,13 @@ PID 1:
 - /bin/init
 - /bin/sh
 
-In our case /sbin/init is a symlink to to /sbin/initldr, it is loaded as PID 1.
+In our case /sbin/init is a symlink to /sbin/initldr. The kernel loads it as
+PID 1.
 
 At this point, InitLrd sets itself as the process leader and disables specific
-signals from interfering with it's operation. After it's environment is set as
+signals from interfering with it's operation, while setting signal handlers for
+a couple that ease communication from /sbin/motherd to /sbin/initlrd without
+need of DBus or some other IPC mechanism. After it's environment is set as
 it desires, it then spawns /sbin/motherd with extra flags to let it know that 
 it is executing inside the early userspace phase of boot.
 
