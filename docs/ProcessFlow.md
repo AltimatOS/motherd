@@ -73,6 +73,7 @@ Once /sbin/motherd exits, the initldr instance in the initrd runs exec on
 
 ## After the Pivot to the Root Filesystem
 
+```
 kernel
 |-> initldr:     A very simple init. It's only job is to hold PID 1 and keep 
 |                the Service Manager running. On non-Linux platforms, it must
@@ -91,6 +92,7 @@ kernel
 |---> ConsoleD:  Virtual Console manager. This service spawns and manages the
 |                virtual terminals and running getty processes
 |---> SessionsD: Login session manager. 
+```
 
 After standing up the standard tooling used inside the initrd, MotherD sends a signal to initldr, which is running as /sbin/init to clean and pivot to the mounted rootfs, which then brings down consoled, eudevd, and mountsd, asks motherd to terminate, then pivot_root is called with exec to /sbin/initldr.
 
