@@ -73,25 +73,53 @@ Once /sbin/motherd exits, the initldr instance in the initrd runs exec on
 
 ## After the Pivot to the Root Filesystem
 
+The typical AltimatOS installation will run the following daemons to bring up
+the core operating system. Note that the various daemons listed other than
+InitLdr and MotherD are not supplied by the MotherD project, and live in their
+own Git repositories.
+
 ```
-kernel
-|-> initldr:     A very simple init. It's only job is to hold PID 1 and keep 
-|                the Service Manager running. On non-Linux platforms, it must
-|                act as process parent for orphaned processes and direct
-|                descendents
-|--> MotherD:    Service Manager, does not run as PID 1. On Linux, it uses
-|                the PR_SET_CHILD_SUBREAPER to act as the parent of any new
-|                processes that descend from it, and any that are orphaned by
-|                their parent process
-|---> MountsD:   Filesystems mount manager. All mount requests flow through
-|                this daemon to manage owner identity on mounts. It must be
-|                started first since it must mount /dev as devtmpfs for proper
-|                operation of /sbin/eudevd
-|---> EudevD:    The Gentoo fork of udev that populates the devtmpfs mounted at
-|                /dev based on Kernel events
-|---> ConsoleD:  Virtual Console manager. This service spawns and manages the
-|                virtual terminals and running getty processes
-|---> SessionsD: Login session manager. 
+kernel                 The operating system kernel. In AltimatOS, this is the
+|                      Linux kernel
+'-> initldr:           A very simple init. It's primary job is to hold PID 1
+    |                  and keep the Service Manager running. On non-Linux
+    |                  platforms, it must act as process parent for orphaned
+    |                  processes and direct descendents. All actions for
+    |                  UNIX signals are managed by other tools, and are only
+    |                  dispatched
+    '-> MotherD:       Service Manager, does not run as PID 1. On Linux, it
+        |              uses the `PR_SET_CHILD_SUBREAPER` capability to act as
+        |              the parent of any new processes that descend from it,
+        |              and any that are orphaned by their parent process
+        |-> dbusd:     The D-Bus message bus daemon. The only part of SystemD 
+        |              that AltimatOS will utilize. Eventually, this as well
+        |              will be re-implemented to simplify system dependencies.
+        |              All core services use D-Bus for IPC and will take
+        |              advantage of Bus-1 when it is offered from the Kernel
+        |-> MountsD:   Filesystems mount manager. All mount requests flow 
+        |              through this daemon to manage owner identity on mounts.
+        |              It must be started first since it must mount /dev as
+        |              devtmpfs for proper operation of `/sbin/eudevd` and
+        |              to mount the special filesystems, `/proc`, `/sys`, etc.
+        |-> EudevD:    The Gentoo fork of udev that populates the devtmpfs
+        |              mounted at `/dev` based on Kernel events. During device
+        |              enumeration, MountD will be sent events to mount the
+        |              volumes that the site administrator has registered with
+        |              it
+        |-> PowerD:    The power management control daemon for AltimatOS
+        |-> SecurityD: The Security Daemon. This abstracts the various identity
+        |              sources that AltimatOS supports. This normally will send
+        |              requests to the PAM and NSS layer on behalf of the 
+        |              `/bin/login` command and any X11 login manager
+        |-> SessionsD: Login session manager. The `/bin/login` command will
+        |              send requests to this daemon to manage the information
+        |              about a session
+        |-> ConsoleD:  The Virtual Console manager. This service spawns and
+            |          manages the virtual terminals and running getty 
+            |          processes
+            '-> getty: The Terminal control command that spawns `/bin/login`
+                       after opening the terminal
+
 ```
 
 After standing up the standard tooling used inside the initrd, MotherD sends a signal to initldr, which is running as /sbin/init to clean and pivot to the mounted rootfs, which then brings down consoled, eudevd, and mountsd, asks motherd to terminate, then pivot_root is called with exec to /sbin/initldr.
